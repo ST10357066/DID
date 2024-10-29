@@ -1,0 +1,587 @@
+DigiVerifyMe/                  # React Vite TypeScript
+├── public/                    # Public assets (HTML, images)
+│   
+├── src/
+│   ├── components/            # Reusable UI components
+│   │   ├── common/            # Common/shared components
+│   │   │   ├── Button.tsx     # Generic button component
+│   │   │   ├── Input.tsx      # Generic input component
+│   │   │   ├── Tabs.tsx
+│   │   │   └── Card.tsx       # Generic card component
+│   │   ├── layout/            # Layout components
+│   │   │   ├── Header.tsx     # Navigation and branding header component
+│   │   │   ├── SideBar.tsx    # Sidebar component
+│   │   ├── session/           # Session-related components
+│   │   │   ├── SessionList.tsx # Component displaying all logged-in sessions (via DID signatures)
+│   │   │   └── LogoutButton.tsx # DID-based logout functionality for sessions
+│   │   ├── verification/       # Verification-related components
+│   │   │   ├── DIDVerification.tsx # DID-based identity verification (via smart contracts)
+│   │   │   └── ZKPRequest.tsx  # Request zero-knowledge proof verification
+│   ├── pages/                 # Pages for different views
+│   │   ├── Account/           # Account-related pages
+│   │   │   ├── AccountPage.tsx # Main account management page
+│   │   │   ├── AccountRecoveryPage.tsx
+│   │   │   ├── SignupPage.tsx     # DID-based registration page
+│   │   │   ├── LoginPage.tsx      # DID-based login page
+│   │   │   ├── Profile.tsx
+│   │   ├── settings/           #Content for the settings page
+│   │   │   ├── NotificationsContent.tsx 
+│   │   │   ├── PrivacyContent.tsx 
+│   │   │   ├── ProfileContent.tsx 
+│   │   │   ├── SecurityContent.tsx 
+│   │   │   ├── SettingsPage.tsx    # Settings page
+│   │   ├── Verification/           
+│   │   │   ├── VerificationRequestPage.tsx 
+│   │   │   ├── CompletedContent.tsx
+│   │   │   ├── PendingContent.tsx
+│   │   │   ├── RequestDetail.tsx 
+│   │   ├── Wallet/ 
+│   │   │   ├── WalletPage.tsx
+│   │   │   ├── CredentialCard.tsx
+│   │   │   ├── CredentialDetailsPage.tsx
+│   │   │   ├── StatCard.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── HelpAndSupportPage.tsx 
+│   │   ├── NotificationsPage.tsx
+│   │   ├── SessionManagementPage.tsx # Page showing current logged-in sessions
+│   │   └──  ZKPPage.tsx        # Page to submit zero-knowledge proofs
+│   ├── services/              # API service files
+│   │   ├── authService.tsx    # Handles DID authentication API calls
+│   │   ├── sessionService.tsx  # Fetches and manages session data
+│   │   ├── blockchainService.tsx
+│   │   ├── kycService.tsx
+│   │   ├── notificationsService.tsx
+│   │   ├── SessionManagerService.tsx
+│   │   ├── verificationService.tsx
+│   │   ├── walletService.tsx
+│   │   └── zkService.tsx      # Handles ZKP-related operations
+│   ├── store/                 # State management (e.g., Redux or Context API)
+│   │   ├── authSlice.tsx      # Manages DID-based authentication state
+│   │   ├── sessionSlice.tsx    # Manages session state
+│   │   └── zkSlice.tsx        # Manages ZKP requests and verification statuses
+│   ├── App.tsx                # Main React app component (routes and layout)
+│   ├── main.tsx               # Entry point for React app
+└── package.json               # Frontend dependencies
+└── index.html                 # Main HTML file
+
+
+cd DigiVerifyMe
+npm install
+npm run dev
+
+
+// Frontend\DigiVerifyMe\src\pages\AccountPage.tsx
+
+import { useSelector } from 'react-redux';
+import DIDVerification from '../../components/verification/DIDVerification';
+import SessionList from '../../components/session/SessionList';
+import { RootState } from '../../store/store';
+
+function AccountPage() {
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+        <h2 className="text-lg font-semibold">Please log in to view your account.</h2>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h2 className="text-2xl font-bold">Account Page</h2>
+      <p className="mt-2 text-lg">Welcome, {user.name}!</p>
+      <p className="text-sm text-muted-foreground">Your DID: <span className="font-medium">{user.did}</span></p>
+      <div className="mt-6">
+        <DIDVerification />
+      </div>
+      <h3 className="mt-8 text-xl font-semibold">Active Sessions</h3>
+      <SessionList />
+    </div>
+  );
+}
+
+export default AccountPage;
+// Frontend\DigiVerifyMe\src\pages\AccountRecoveryPage.tsx
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/common/Card";
+import Button from "../../components/common/Button";
+import Input from "../../components/common/Input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/common/Tabs";
+import {
+  Key,
+  Fingerprint,
+  Users,
+  Mail,
+  Lock,
+} from "lucide-react";
+
+export default function AccountRecoveryPage() {
+  const [recoveryStep, setRecoveryStep] = useState(0);
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-lg">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-center mb-4">
+            <Lock className="h-12 w-12 text-blue-600" />
+          </div>
+          <CardTitle className="text-2xl text-center">Account Recovery</CardTitle>
+          <CardDescription className="text-center">
+            Choose a method to recover your account access
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue={0}>
+            <div className="grid grid-cols-4 w-full mb-4">
+            <TabsList >
+              <TabsTrigger value="phrase" isActive={recoveryStep === 0} onClick={() => setRecoveryStep(0)}>
+                Recovery Phrase
+              </TabsTrigger>
+              <TabsTrigger value="social" isActive={recoveryStep === 1} onClick={() => setRecoveryStep(1)}>
+                Social Recovery
+              </TabsTrigger>
+              <TabsTrigger value="biometric" isActive={recoveryStep === 2} onClick={() => setRecoveryStep(2)}>
+                Biometric
+              </TabsTrigger>
+              <TabsTrigger value="email" isActive={recoveryStep === 3} onClick={() => setRecoveryStep(3)}>
+                Email Recovery
+              </TabsTrigger>
+            </TabsList>
+            </div>
+            <TabsContent value="phrase" isActive={recoveryStep === 0}>
+              <div className="space-y-4">
+                <label className="text-sm font-medium">Enter Recovery Phrase</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[...Array(12)].map((_, i) => (
+                    <Input key={i} placeholder={`Word ${i + 1}`} />
+                  ))}
+                </div>
+                <Button className="w-full">
+                  <Key className="mr-2 h-4 w-4" />
+                  Recover Account
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="social" isActive={recoveryStep === 1}>
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-medium mb-2">Trusted Contacts</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Contact your trusted recovery contacts to help restore access
+                  </p>
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((contact) => (
+                      <div key={contact} className="flex items-center justify-between p-2 border rounded">
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4" />
+                          <span>Trusted Contact {contact}</span>
+                        </div>
+                        <Button size="small">Contact</Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button className="w-full">Initiate Social Recovery</Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="biometric" isActive={recoveryStep === 2}>
+              <div className="space-y-4 text-center">
+                <div className="p-6 border rounded-lg">
+                  <Fingerprint className="h-16 w-16 mx-auto mb-4 text-blue-600" />
+                  <h3 className="font-medium mb-2">Biometric Verification</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Use your registered biometric data to recover access
+                  </p>
+                </div>
+                <Button className="w-full">Start Biometric Verification</Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="email" isActive={recoveryStep === 3}>
+              <div className="space-y-4">
+                <label className="text-sm font-medium">Enter your registered email address</label>
+                <Input placeholder="Email Address" />
+                <Button className="w-full">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send Recovery Email
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="mt-6 pt-6 border-t">
+            <div className="space-y-4">
+              <div className="text-sm text-center space-x-4">
+                <a href="/support" className="text-blue-600 hover:underline">Contact Support</a>
+                <span>•</span>
+                <a href="/faq" className="text-blue-600 hover:underline">Recovery FAQ</a>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+import{ useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/common/Card";
+import  Button  from "../../components/common/Button";
+import  Input  from "../../components/common/Input";
+import { Fingerprint, Key, Shield } from 'lucide-react';
+
+ function LoginPage() {
+  const [loginMethod, setLoginMethod] = useState('password');
+  
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-center mb-4">
+            <Shield className="h-12 w-12 text-blue-600" />
+          </div>
+          <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+          <CardDescription className="text-center">
+            Sign in to your decentralized identity
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {loginMethod === 'password' && (
+              <>
+                <Input
+                  type="text"
+                  placeholder="Username or DID"
+                  className="w-full"
+                />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  className="w-full"
+                />
+              </>
+            )}
+          </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant={loginMethod === 'password' ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setLoginMethod('password')}
+            >
+              <Key className="mr-2 h-4 w-4" />
+              Password
+            </Button>
+            <Button 
+              variant={loginMethod === 'biometric' ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setLoginMethod('biometric')}
+            >
+              <Fingerprint className="mr-2 h-4 w-4" />
+              Biometric
+            </Button>
+            <Button 
+              variant={loginMethod === 'wallet' ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setLoginMethod('wallet')}
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              Wallet
+            </Button>
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <Button className="w-full">Sign In</Button>
+          <div className="text-sm text-center space-x-4">
+            <a href="/signup" className="text-blue-600 hover:underline">Create Account</a>
+            <span>•</span>
+            <a href="/recovery" className="text-blue-600 hover:underline">Recover Access</a>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+export default LoginPage;
+// DigiVerifyMe\src\pages\Account\Profile.tsx
+import React, { useState } from 'react';
+import Button from '../../components/common/Button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/common/Card';
+
+interface UserProfile {
+  usernameOrEmail: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+const Profile = () => {
+  const [profile, setProfile] = useState<UserProfile>({
+    usernameOrEmail: 'johndoe',
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '+1234567890',
+    address: '123 Main St, Springfield, USA',
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setProfile((prevProfile) => ({ ...prevProfile, [name]: value }));
+  };
+
+  const handleSave = () => {
+    console.log('Profile saved:', profile);
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>User Profile</CardTitle>
+          <CardDescription>View and edit your profile information</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label className="block font-medium">Username or Email:</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="usernameOrEmail"
+                  value={profile.usernameOrEmail}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border rounded-md p-2"
+                />
+              ) : (
+                <p>{profile.usernameOrEmail}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium">Name:</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="name"
+                  value={profile.name}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border rounded-md p-2"
+                />
+              ) : (
+                <p>{profile.name}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium">Email:</label>
+              {isEditing ? (
+                <input
+                  type="email"
+                  name="email"
+                  value={profile.email}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border rounded-md p-2"
+                />
+              ) : (
+                <p>{profile.email}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium">Phone:</label>
+              {isEditing ? (
+                <input
+                  type="tel"
+                  name="phone"
+                  value={profile.phone}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border rounded-md p-2"
+                />
+              ) : (
+                <p>{profile.phone}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium">Address:</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="address"
+                  value={profile.address}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border rounded-md p-2"
+                />
+              ) : (
+                <p>{profile.address}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+        <div className="flex justify-end space-x-4 p-4">
+          {isEditing ? (
+            <Button onClick={handleSave}>Save</Button>
+          ) : (
+            <Button onClick={handleEditToggle}>Edit</Button>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default Profile;
+// Frontend\DigiVerifyMe\src\pages\AccountRecoveryPage.tsx
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/common/Card";
+import Button from "../../components/common/Button";
+import Input from "../../components/common/Input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/common/Tabs";
+import {
+  Key,
+  Fingerprint,
+  Users,
+  Mail,
+  Lock,
+} from "lucide-react";
+
+export default function AccountRecoveryPage() {
+  const [recoveryStep, setRecoveryStep] = useState(0);
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-lg">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-center mb-4">
+            <Lock className="h-12 w-12 text-blue-600" />
+          </div>
+          <CardTitle className="text-2xl text-center">Account Recovery</CardTitle>
+          <CardDescription className="text-center">
+            Choose a method to recover your account access
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue={0}>
+            <div className="grid grid-cols-4 w-full mb-4">
+            <TabsList >
+              <TabsTrigger value="phrase" isActive={recoveryStep === 0} onClick={() => setRecoveryStep(0)}>
+                Recovery Phrase
+              </TabsTrigger>
+              <TabsTrigger value="social" isActive={recoveryStep === 1} onClick={() => setRecoveryStep(1)}>
+                Social Recovery
+              </TabsTrigger>
+              <TabsTrigger value="biometric" isActive={recoveryStep === 2} onClick={() => setRecoveryStep(2)}>
+                Biometric
+              </TabsTrigger>
+              <TabsTrigger value="email" isActive={recoveryStep === 3} onClick={() => setRecoveryStep(3)}>
+                Email Recovery
+              </TabsTrigger>
+            </TabsList>
+            </div>
+            <TabsContent value="phrase" isActive={recoveryStep === 0}>
+              <div className="space-y-4">
+                <label className="text-sm font-medium">Enter Recovery Phrase</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[...Array(12)].map((_, i) => (
+                    <Input key={i} placeholder={`Word ${i + 1}`} />
+                  ))}
+                </div>
+                <Button className="w-full">
+                  <Key className="mr-2 h-4 w-4" />
+                  Recover Account
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="social" isActive={recoveryStep === 1}>
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-medium mb-2">Trusted Contacts</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Contact your trusted recovery contacts to help restore access
+                  </p>
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((contact) => (
+                      <div key={contact} className="flex items-center justify-between p-2 border rounded">
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4" />
+                          <span>Trusted Contact {contact}</span>
+                        </div>
+                        <Button size="small">Contact</Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button className="w-full">Initiate Social Recovery</Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="biometric" isActive={recoveryStep === 2}>
+              <div className="space-y-4 text-center">
+                <div className="p-6 border rounded-lg">
+                  <Fingerprint className="h-16 w-16 mx-auto mb-4 text-blue-600" />
+                  <h3 className="font-medium mb-2">Biometric Verification</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Use your registered biometric data to recover access
+                  </p>
+                </div>
+                <Button className="w-full">Start Biometric Verification</Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="email" isActive={recoveryStep === 3}>
+              <div className="space-y-4">
+                <label className="text-sm font-medium">Enter your registered email address</label>
+                <Input placeholder="Email Address" />
+                <Button className="w-full">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send Recovery Email
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="mt-6 pt-6 border-t">
+            <div className="space-y-4">
+              <div className="text-sm text-center space-x-4">
+                <a href="/support" className="text-blue-600 hover:underline">Contact Support</a>
+                <span>•</span>
+                <a href="/faq" className="text-blue-600 hover:underline">Recovery FAQ</a>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

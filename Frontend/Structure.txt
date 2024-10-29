@@ -1,0 +1,153 @@
+DigiVerifyMe/                  # React Vite TypeScript
+├── public/                    # Public assets (HTML, images)
+│   
+├── src/
+│   ├── components/            # Reusable UI components
+│   │   ├── common/            # Common/shared components
+│   │   │   ├── Button.tsx     # Generic button component
+│   │   │   ├── Input.tsx      # Generic input component
+│   │   │   ├── Tabs.tsx
+│   │   │   └── Card.tsx       # Generic card component
+│   │   ├── layout/            # Layout components
+│   │   │   ├── Header.tsx     # Navigation and branding header component
+│   │   │   ├── SideBar.tsx    # Sidebar component
+│   │   ├── session/           # Session-related components
+│   │   │   ├── SessionList.tsx # Component displaying all logged-in sessions (via DID signatures)
+│   │   │   └── LogoutButton.tsx # DID-based logout functionality for sessions
+│   │   ├── verification/       # Verification-related components
+│   │   │   ├── DIDVerification.tsx # DID-based identity verification (via smart contracts)
+│   │   │   └── ZKPRequest.tsx  # Request zero-knowledge proof verification
+│   ├── pages/                 # Pages for different views
+│   │   ├── Account/           # Account-related pages
+│   │   │   ├── AccountPage.tsx # Main account management page
+│   │   │   ├── AccountRecoveryPage.tsx
+│   │   │   ├── SignupPage.tsx     # DID-based registration page
+│   │   │   ├── LoginPage.tsx      # DID-based login page
+│   │   │   ├── Profile.tsx
+│   │   ├── settings/           #Content for the settings page
+│   │   │   ├── NotificationsContent.tsx 
+│   │   │   ├── PrivacyContent.tsx 
+│   │   │   ├── ProfileContent.tsx 
+│   │   │   ├── SecurityContent.tsx 
+│   │   │   ├── SettingsPage.tsx    # Settings page
+│   │   ├── Verification/           
+│   │   │   ├── VerificationRequestPage.tsx 
+│   │   │   ├── CompletedContent.tsx
+│   │   │   ├── PendingContent.tsx
+│   │   │   ├── RequestDetail.tsx 
+│   │   ├── Wallet/ 
+│   │   │   ├── WalletPage.tsx
+│   │   │   ├── CredentialCard.tsx
+│   │   │   ├── CredentialDetailsPage.tsx
+│   │   │   ├── StatCard.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── HelpAndSupportPage.tsx 
+│   │   ├── NotificationsPage.tsx
+│   │   ├── SessionManagementPage.tsx # Page showing current logged-in sessions
+│   │   └──  ZKPPage.tsx        # Page to submit zero-knowledge proofs
+│   ├── services/              # API service files
+│   │   ├── authService.tsx    # Handles DID authentication API calls
+│   │   ├── sessionService.tsx  # Fetches and manages session data
+│   │   ├── blockchainService.tsx
+│   │   ├── kycService.tsx
+│   │   ├── notificationsService.tsx
+│   │   ├── SessionManagerService.tsx
+│   │   ├── verificationService.tsx
+│   │   ├── walletService.tsx
+│   │   └── zkService.tsx      # Handles ZKP-related operations
+│   ├── store/                 # State management (e.g., Redux or Context API)
+│   │   ├── authSlice.tsx      # Manages DID-based authentication state
+│   │   ├── sessionSlice.tsx    # Manages session state
+│   │   └── zkSlice.tsx        # Manages ZKP requests and verification statuses
+│   ├── App.tsx                # Main React app component (routes and layout)
+│   ├── main.tsx               # Entry point for React app
+└── package.json               # Frontend dependencies
+└── index.html                 # Main HTML file
+
+
+cd DigiVerifyMe
+npm install
+npm run dev
+
+
+Decentralized Identity Verification System
+Header Design:
+The header should remain at the top of the page, containing quick access actions and important information about the user’s identity status.
+Components:
+Logo (left side): Display your app’s logo or name.
+Page Title: Shows the current page title (e.g., "Dashboard", "Wallet", etc.).
+Quick Links:
+Notifications: Icon showing notifications for new verification requests, sessions, or alerts.
+Account Settings: Icon for accessing account settings or security preferences.
+Log Out: A quick logout button.
+1. LoginPage
+Purpose: Allows users to authenticate into the system using their decentralized identity (DID) credentials. It may also integrate with external identity providers (if needed).
+Components:
+Login Form: For entering credentials (username/DID, password, or biometric).
+Authentication Options: Supports multiple methods (password, biometric, hardware wallet).
+Sign Up / Recovery Links: Directs users to sign-up or recovery pages if they are new or need to reset their credentials.
+2. SignUpPage
+Purpose: Facilitates onboarding new users by creating their decentralized identity (DID) or linking an existing DID to their account.
+Components:
+Registration Form: Collects essential information for identity creation (e.g., username, email, public key).
+KYC Onboarding: Optionally, this can include an integration with KYC providers for verified identity registration.
+Wallet Setup: If the app uses a decentralized wallet, it allows users to set up or import their wallet
+Sidebar Design
+The sidebar will serve as the primary navigation area on the left side of the dashboard. It should be compact, intuitive, and provide quick access to all key features of the app.
+Components:
+Profile Section (top of the sidebar):
+Display user's profile picture, username, and DID.
+Option to quickly edit profile or log out.
+Navigation Links (main section):
+Dashboard: Summary of account activity, verification requests, and login sessions.
+Wallet: Manage identity credentials, keys, and ZKPs.
+Verification Requests: View and respond to incoming requests.
+Session Management: Manage active sessions and revoke access from devices.
+Settings: Manage account and security preferences.
+Help & Support: Link to support or help center.
+Logout: Button to securely log out of the system.
+3. WalletPage
+Purpose: Provides users with the ability to manage their decentralized identity, credentials, and verifiable claims.
+Components:
+Identity Overview: Displays the user’s DID, public keys, and basic account information.
+Credential Management: Allows users to view, add, and revoke verifiable credentials (e.g., passport, driver’s license).
+Transaction History: Shows a log of all identity-related actions performed via smart contracts on the blockchain.
+4. DashboardPage
+Purpose: This page provides an overview of user activity, notifications, and logged-in sessions across different devices or platforms.
+Components:
+Logged-In Sessions: Lists all active sessions, the platforms where the user is logged in, and provides options to revoke access remotely.
+Recent Activity: Displays recent identity verification requests and approvals.
+Notifications: Alerts for important actions, such as new verification requests or upcoming credential expirations.
+Identity Score (Optional): If applicable, shows the reputation or trust score of the user’s identity.
+5. VerificationRequestPage
+Purpose: Allows users to manage verification requests from service providers, responding with the necessary proof of identity.
+Components:
+Pending Requests: Lists verification requests that need user approval.
+ZKP Generation: Users can generate zero-knowledge proofs to verify specific identity attributes without revealing full information.
+Verification History: A log of past verifications, including the service provider and the verified attributes.
+6. SessionManagementPage
+Purpose: Allows users to view and manage all current and past login sessions to ensure account security.
+Components:
+Active Sessions: Displays all devices and platforms where the user is logged in.
+Revoke Access: Allows users to revoke access from a specific device or platform.
+Session Expiry Management: Users can set time limits for login sessions or enforce session policies (e.g., two-factor authentication).
+
+7. AccountRecoveryPage
+Purpose: Helps users recover their account in case they lose access to their private keys or other credentials.
+Components:
+Recovery Options: Multi-signature recovery with trusted contacts, biometric verification, or security questions.
+Key Recovery Process: Guides the user through securely restoring their private keys using backups or social recovery mechanisms.
+
+8. ServiceProviderVerificationPage
+Purpose: This page is for service providers who request identity verification from users.
+Components:
+Request Form: Service providers can submit verification requests, specifying what attributes they need.
+Response Interface: Shows the verification results after a user approves the request and shares the necessary information.
+Request History: A log of all past verification requests made by the service provider.
+
+9. SettingsPage
+Purpose: Allows users to manage their account preferences, security settings, and personal information.
+Components:
+Profile Settings: Users can edit basic information, such as their name or email (if applicable).
+Security Settings: Manage two-factor authentication, session timeouts, and change private keys.
+Privacy Preferences: Set preferences for sharing identity attributes with specific service providers or limiting what is shared by default.
